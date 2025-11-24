@@ -10,19 +10,25 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class FormActivity extends AppCompatActivity {
+
     private static final int PICK_IMAGE_REQUEST = 1;
+
     TextView tvDetailBooking;
     EditText etNama, etWa, etAlamat;
     Button btnPilihGambar, btnSimpan;
     ImageView imgPreview;
+
     DBHelper dbHelper;
+
     String namaLapangan;
     ArrayList<String> jamBookingList;
     int totalHarga;
@@ -34,6 +40,7 @@ public class FormActivity extends AppCompatActivity {
         setContentView(R.layout.activity_form);
 
         dbHelper = new DBHelper(this);
+
         tvDetailBooking = findViewById(R.id.tvDetailBooking);
         etNama = findViewById(R.id.etNamaForm);
         etWa = findViewById(R.id.etWaForm);
@@ -44,8 +51,11 @@ public class FormActivity extends AppCompatActivity {
         namaLapangan = getIntent().getStringExtra("NAMA_LAPANGAN");
         jamBookingList = getIntent().getStringArrayListExtra("JAM_BOOKING_LIST");
         totalHarga = getIntent().getIntExtra("TOTAL_HARGA", 0);
+        String jamTerformat = "";
+        if (jamBookingList != null) {
+            jamTerformat = String.join(", ", jamBookingList);
+        }
 
-        String jamTerformat = String.join(", ", jamBookingList);
         NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
         String hargaTerformat = formatter.format(totalHarga);
 
@@ -53,8 +63,19 @@ public class FormActivity extends AppCompatActivity {
                 "\nJam: " + jamTerformat +
                 "\nTotal: " + hargaTerformat);
 
-        btnPilihGambar.setOnClickListener(v -> bukaGaleri());
-        btnSimpan.setOnClickListener(v -> simpanData());
+        btnPilihGambar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                bukaGaleri();
+            }
+        });
+
+        btnSimpan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                simpanData();
+            }
+        });
     }
 
     private void bukaGaleri() {
@@ -74,7 +95,6 @@ public class FormActivity extends AppCompatActivity {
             imgPreview.setVisibility(View.VISIBLE);
         }
     }
-
     private void simpanData() {
         String nama = etNama.getText().toString().trim();
         String wa = etWa.getText().toString().trim();
@@ -89,11 +109,23 @@ public class FormActivity extends AppCompatActivity {
             Toast.makeText(this, "Harap upload bukti pembayaran", Toast.LENGTH_SHORT).show();
             return;
         }
+
         try {
-            for (String jam : jamBookingList) {
-                dbHelper.updateScheduleStatus(jam, "dipesan");
+            String imageString = imageUri.toString();
+
+            if (jamBookingList != null) {
+                for (String jam : jamBookingList) {
+                    dbHelper.updateScheduleStatus(jam, "dipesan", imageString);
+                }
             }
-            Toast.makeText(this, "Booking berhasil disimpan!", Toast.LENGTH_LONG).show();
+
+            Toast.makeText(this, "Booking Berhasil & Bukti Tersimpan!", Toast.LENGTH_LONG).show();
+
+            Intent intent = new Intent(FormActivity.this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+
         } catch (Exception e) {
             Log.e("FormActivity", "Error saat update database: " + e.getMessage());
             Toast.makeText(this, "Gagal menyimpan booking.", Toast.LENGTH_SHORT).show();

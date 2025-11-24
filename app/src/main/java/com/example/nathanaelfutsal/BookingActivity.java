@@ -8,25 +8,33 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Collections;
 
 public class BookingActivity extends AppCompatActivity implements JadwalAdapter.OnSelectionChangedListener {
+
     TextView tvNamaLapangan, tvTanggal, tvJamTerpilih, tvTotalHarga;
     ImageView btnKembali;
     RecyclerView rvJadwal;
     Button btnPesan;
+
     private DBHelper dbHelper;
     private static final String TAG = "BookingActivity";
+
     JadwalAdapter adapter;
     ArrayList<JadwalModel> listJadwal;
     ArrayList<JadwalModel> slotTerpilih = new ArrayList<>();
+
     String namaLapanganDiterima;
     int hargaPerJam = 150000;
 
@@ -34,8 +42,11 @@ public class BookingActivity extends AppCompatActivity implements JadwalAdapter.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_booking);
+
         dbHelper = new DBHelper(this);
+
         namaLapanganDiterima = getIntent().getStringExtra("NAMA_LAPANGAN");
+
         tvNamaLapangan = findViewById(R.id.tvNamaLapanganBooking);
         tvTanggal = findViewById(R.id.tvTanggalBooking);
         btnKembali = findViewById(R.id.btnKembaliBooking);
@@ -43,14 +54,23 @@ public class BookingActivity extends AppCompatActivity implements JadwalAdapter.
         btnPesan = findViewById(R.id.btnPesanSekarang);
         tvJamTerpilih = findViewById(R.id.tvJamTerpilih);
         tvTotalHarga = findViewById(R.id.tvTotalHarga);
+
         tvNamaLapangan.setText("Jadwal " + namaLapanganDiterima);
         tvTanggal.setText(getTanggalHariIni());
+
         listJadwal = new ArrayList<>();
         adapter = new JadwalAdapter(this, listJadwal, this);
         rvJadwal.setLayoutManager(new LinearLayoutManager(this));
         rvJadwal.setAdapter(adapter);
+
         btnKembali.setOnClickListener(v -> finish());
+
         btnPesan.setOnClickListener(v -> {
+            if (!isConsecutive(slotTerpilih)) {
+                Toast.makeText(this, "Jam booking harus berurutan!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             Intent intent = new Intent(BookingActivity.this, FormActivity.class);
             ArrayList<String> jamBookingList = new ArrayList<>();
             for (JadwalModel model : slotTerpilih) {
@@ -72,9 +92,7 @@ public class BookingActivity extends AppCompatActivity implements JadwalAdapter.
     private void loadJadwalFromSQLite() {
         try {
             adapter.clear();
-
             ArrayList<JadwalModel> schedules = dbHelper.getAllSchedules();
-
             for (JadwalModel model : schedules) {
                 adapter.add(model);
             }
@@ -116,5 +134,25 @@ public class BookingActivity extends AppCompatActivity implements JadwalAdapter.
             btnPesan.setText("Pesan Sekarang (" + jumlahJam + " Jam)");
             btnPesan.setEnabled(true);
         }
+    }
+
+    private boolean isConsecutive(ArrayList<JadwalModel> slots) {
+        if (slots.size() <= 1) return true;
+
+        ArrayList<Integer> jamAngka = new ArrayList<>();
+
+        for (JadwalModel slot : slots) {
+            String jamStr = slot.getJam().substring(0, 2);
+            jamAngka.add(Integer.parseInt(jamStr));
+        }
+
+        Collections.sort(jamAngka);
+
+        for (int i = 0; i < jamAngka.size() - 1; i++) {
+            if (jamAngka.get(i + 1) - jamAngka.get(i) != 1) {
+                return false;
+            }
+        }
+        return true;
     }
 }

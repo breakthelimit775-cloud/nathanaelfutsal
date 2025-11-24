@@ -9,12 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 
 public class DBHelper extends SQLiteOpenHelper {
+
     public static final String DATABASE_NAME = "nathanaelfutsal.db";
     public static final int DATABASE_VERSION = 1;
     public static final String TABLE_SCHEDULE = "jadwal";
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_JAM = "jam";
     public static final String COLUMN_STATUS = "status";
+    public static final String COLUMN_BUKTI = "bukti_tf";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -22,10 +24,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // === 2. UPDATE QUERY CREATE TABLE ===
         String CREATE_TABLE_QUERY = "CREATE TABLE " + TABLE_SCHEDULE + "("
                 + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_JAM + " TEXT,"
-                + COLUMN_STATUS + " TEXT" + ")";
+                + COLUMN_STATUS + " TEXT,"
+                + COLUMN_BUKTI + " TEXT" + ")";
         db.execSQL(CREATE_TABLE_QUERY);
 
         isiDataAwal(db);
@@ -33,37 +37,22 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private void isiDataAwal(SQLiteDatabase db) {
         ContentValues values = new ContentValues();
+        // Kita buat method helper biar coding lebih rapi
+        insertSlot(db, "08:00 - 09:00", "dipesan");
+        insertSlot(db, "09:00 - 10:00", "tersedia");
+        insertSlot(db, "10:00 - 11:00", "tersedia");
+        insertSlot(db, "11:00 - 12:00", "dipesan");
+        insertSlot(db, "13:00 - 14:00", "tersedia");
+        insertSlot(db, "14:00 - 15:00", "tersedia");
+        insertSlot(db, "15:00 - 16:00", "dipesan");
+        insertSlot(db, "16:00 - 17:00", "tersedia");
+    }
 
-        values.put(COLUMN_JAM, "08:00 - 09:00");
-        values.put(COLUMN_STATUS, "dipesan");
-        db.insert(TABLE_SCHEDULE, null, values);
-
-        values.put(COLUMN_JAM, "09:00 - 10:00");
-        values.put(COLUMN_STATUS, "tersedia");
-        db.insert(TABLE_SCHEDULE, null, values);
-
-        values.put(COLUMN_JAM, "10:00 - 11:00");
-        values.put(COLUMN_STATUS, "tersedia");
-        db.insert(TABLE_SCHEDULE, null, values);
-
-        values.put(COLUMN_JAM, "11:00 - 12:00");
-        values.put(COLUMN_STATUS, "dipesan");
-        db.insert(TABLE_SCHEDULE, null, values);
-
-        values.put(COLUMN_JAM, "13:00 - 14:00");
-        values.put(COLUMN_STATUS, "tersedia");
-        db.insert(TABLE_SCHEDULE, null, values);
-
-        values.put(COLUMN_JAM, "14:00 - 15:00");
-        values.put(COLUMN_STATUS, "tersedia");
-        db.insert(TABLE_SCHEDULE, null, values);
-
-        values.put(COLUMN_JAM, "15:00 - 16:00");
-        values.put(COLUMN_STATUS, "dipesan");
-        db.insert(TABLE_SCHEDULE, null, values);
-
-        values.put(COLUMN_JAM, "16:00 - 17:00");
-        values.put(COLUMN_STATUS, "tersedia");
+    private void insertSlot(SQLiteDatabase db, String jam, String status) {
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_JAM, jam);
+        values.put(COLUMN_STATUS, status);
+        values.put(COLUMN_BUKTI, ""); // Default kosong
         db.insert(TABLE_SCHEDULE, null, values);
     }
 
@@ -76,24 +65,29 @@ public class DBHelper extends SQLiteOpenHelper {
     public ArrayList<JadwalModel> getAllSchedules() {
         ArrayList<JadwalModel> scheduleList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SCHEDULE, null);
+
         if (cursor.moveToFirst()) {
             do {
                 String jam = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_JAM));
                 String status = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS));
-                scheduleList.add(new JadwalModel(jam, status));
+
+                JadwalModel model = new JadwalModel(jam, status);
+                scheduleList.add(model);
             } while (cursor.moveToNext());
         }
-
         cursor.close();
         db.close();
         return scheduleList;
     }
-    public void updateScheduleStatus(String jam, String newStatus) {
+
+    public void updateScheduleStatus(String jam, String newStatus, String imageUriString) {
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues values = new ContentValues();
         values.put(COLUMN_STATUS, newStatus);
+        values.put(COLUMN_BUKTI, imageUriString);
+
         db.update(TABLE_SCHEDULE, values, COLUMN_JAM + " = ?", new String[]{jam});
         db.close();
     }
