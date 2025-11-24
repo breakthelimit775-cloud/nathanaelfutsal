@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "850476049225",
+    "project_id": "nathanael-futsal",
+    "storage_bucket": "nathanael-futsal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:850476049225:android:a244bd6d464549061b3098",
+        "android_client_info": {
+          "package_name": "com.example.nathanaelfutsal"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "850476049225-inn6mapnqrqhcenv0127jhgdsb5rj7hs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nathanaelfutsal",
+            "certificate_hash": "dcc9e961dba2ab5f7aa309a52a794aa6df10252e"
+          }
+        },
+        {
+          "client_id": "850476049225-k0hkfrieim75a576ive5cgc5flfro3c7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_YktfaZ3pg8FmULoRzdoRCvOP9Lu5w-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "850476049225-k0hkfrieim75a576ive5cgc5flfro3c7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
