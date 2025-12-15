@@ -1,9 +1,10 @@
 package com.example.nathanaelfutsal;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,7 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.NumberFormat;
@@ -20,19 +22,27 @@ import java.util.Locale;
 
 public class FormActivity extends AppCompatActivity {
 
-    private static final int PICK_IMAGE_REQUEST = 1;
+    private TextView tvTotalHargaForm, tvJamTerpilihForm;
+    private EditText etNamaPenyewa, etNomorTelepon;
+    private ImageView ivBuktiTransfer;
+    private Button btnUploadBukti, btnSelesaikan;
 
-    TextView tvDetailBooking;
-    EditText etNama, etWa, etAlamat;
-    Button btnPilihGambar, btnSimpan;
-    ImageView imgPreview;
+    private DBHelper dbHelper;
+    private String namaLapangan;
+    private int totalHarga;
+    private ArrayList<String> jamBookingList;
+    private String imageString = "";
+    private String userEmail = "";
 
-    DBHelper dbHelper;
-
-    String namaLapangan;
-    ArrayList<String> jamBookingList;
-    int totalHarga;
-    Uri imageUri;
+    private final ActivityResultLauncher<String> imagePickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.GetContent(),
+            uri -> {
+                if (uri != null) {
+                    ivBuktiTransfer.setImageURI(uri);
+                    imageString = uri.toString();
+                    btnUploadBukti.setText("Ubah Bukti Transfer");
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,94 +51,58 @@ public class FormActivity extends AppCompatActivity {
 
         dbHelper = new DBHelper(this);
 
-        tvDetailBooking = findViewById(R.id.tvDetailBooking);
-        etNama = findViewById(R.id.etNamaForm);
-        etWa = findViewById(R.id.etWaForm);
-        etAlamat = findViewById(R.id.etAlamatForm);
-        btnPilihGambar = findViewById(R.id.btnPilihGambar);
-        btnSimpan = findViewById(R.id.btnSimpan);
-        imgPreview = findViewById(R.id.imgPreview);
+        tvTotalHargaForm = findViewById(R.id.tvTotalHargaForm);
+        tvJamTerpilihForm = findViewById(R.id.tvJamTerpilihForm);
+        etNamaPenyewa = findViewById(R.id.etNamaPenyewa);
+        etNomorTelepon = findViewById(R.id.etNomorTelepon);
+        ivBuktiTransfer = findViewById(R.id.ivBuktiTransfer);
+        btnUploadBukti = findViewById(R.id.btnUploadBukti);
+        btnSelesaikan = findViewById(R.id.btnSelesaikanPemesanan);
+
         namaLapangan = getIntent().getStringExtra("NAMA_LAPANGAN");
-        jamBookingList = getIntent().getStringArrayListExtra("JAM_BOOKING_LIST");
         totalHarga = getIntent().getIntExtra("TOTAL_HARGA", 0);
-        String jamTerformat = "";
-        if (jamBookingList != null) {
-            jamTerformat = String.join(", ", jamBookingList);
-        }
+        jamBookingList = getIntent().getStringArrayListExtra("JAM_BOOKING_LIST");
+
+        SharedPreferences pref = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+        userEmail = pref.getString("email", "");
+        etNamaPenyewa.setText(pref.getString("name", ""));
+        etNomorTelepon.setText(pref.getString("phone", ""));
 
         NumberFormat formatter = NumberFormat.getCurrencyInstance(new Locale("id", "ID"));
-        String hargaTerformat = formatter.format(totalHarga);
+        tvTotalHargaForm.setText("Total Harga: " + formatter.format(totalHarga));
 
-        tvDetailBooking.setText("Booking " + namaLapangan +
-                "\nJam: " + jamTerformat +
-                "\nTotal: " + hargaTerformat);
+        StringBuilder jamBuilder = new StringBuilder();
+        if (jamBookingList != null && !jamBookingList.isEmpty()) {
+            String jamMulai = jamBookingList.get(0).substring(0, 5);
+            String jamSelesai = jamBookingList.get(jamBookingList.size() - 1).substring(6, 11);
+            jamBuilder.append("Waktu Booking: ").append(jamMulai).append(" - ").append(jamSelesai);
+        } else {
+            jamBuilder.append("Waktu Booking: N/A");
+        }
+        tvJamTerpilihForm.setText(jamBuilder.toString());
 
-        btnPilihGambar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                bukaGaleri();
+        btnUploadBukti.setOnClickListener(v -> imagePickerLauncher.launch("image/*"));
+
+        btnSelesaikan.setOnClickListener(v -> {
+            if (imageString.isEmpty()) {
+                Toast.makeText(FormActivity.this, "Mohon unggah bukti transfer.", Toast.LENGTH_SHORT).show();
+                return;
             }
-        });
-
-        btnSimpan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                simpanData();
-            }
-        });
-    }
-
-    private void bukaGaleri() {
-        Intent intent = new Intent();
-        intent.setType("image/jpeg,image/png");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Pilih Bukti Transfer"), PICK_IMAGE_REQUEST);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            imageUri = data.getData();
-            imgPreview.setImageURI(imageUri);
-            imgPreview.setVisibility(View.VISIBLE);
-        }
-    }
-    private void simpanData() {
-        String nama = etNama.getText().toString().trim();
-        String wa = etWa.getText().toString().trim();
-        String alamat = etAlamat.getText().toString().trim();
-
-        if (nama.isEmpty() || wa.isEmpty() || alamat.isEmpty()) {
-            Toast.makeText(this, "Harap isi semua data diri", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (imageUri == null) {
-            Toast.makeText(this, "Harap upload bukti pembayaran", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            String imageString = imageUri.toString();
 
             if (jamBookingList != null) {
                 for (String jam : jamBookingList) {
-                    dbHelper.updateScheduleStatus(jam, "dipesan", imageString);
+                    boolean success = dbHelper.updateScheduleStatus(jam, "dipesan", imageString, userEmail);
+                    if (!success) {
+                        Toast.makeText(FormActivity.this, "Gagal memperbarui status jam: " + jam, Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                 }
+                Toast.makeText(FormActivity.this, "Pemesanan berhasil! Menunggu konfirmasi admin.", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(FormActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+                finish();
             }
-
-            Toast.makeText(this, "Booking Berhasil & Bukti Tersimpan!", Toast.LENGTH_LONG).show();
-
-            Intent intent = new Intent(FormActivity.this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
-
-        } catch (Exception e) {
-            Log.e("FormActivity", "Error saat update database: " + e.getMessage());
-            Toast.makeText(this, "Gagal menyimpan booking.", Toast.LENGTH_SHORT).show();
-        }
+        });
     }
 }

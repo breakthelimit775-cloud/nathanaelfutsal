@@ -1,25 +1,31 @@
 package com.example.nathanaelfutsal;
 
 public class JadwalModel {
+    private int id;
+    private String jam;
+    private String status;
+    private String bukti;
 
-    String jam;
-    String status;
-    public JadwalModel() {
-    }
-    public JadwalModel(String jam, String status) {
+    public JadwalModel(int id, String jam, String status, String bukti) {
+        this.id = id;
         this.jam = jam;
         this.status = status;
+        this.bukti = bukti;
     }
+
+    public int getId() {
+        return id;
+    }
+
     public String getJam() {
         return jam;
     }
+
     public String getStatus() {
         return status;
     }
-    public void setJam(String jam) {
-        this.jam = jam;
-    }
-    public void setStatus(String status) {
-        this.status = status;
+
+    public String getBukti() {
+        return bukti;
     }
 }

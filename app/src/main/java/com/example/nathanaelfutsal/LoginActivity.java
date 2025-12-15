@@ -1,15 +1,18 @@
 package com.example.nathanaelfutsal;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -29,6 +32,7 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     MaterialButton btnGoogleLogin;
     TextView tvGoToRegister;
+
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private static final String TAG = "GoogleSignIn";
@@ -38,7 +42,6 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         etEmail = findViewById(R.id.etEmailLogin);
         etPassword = findViewById(R.id.etPasswordLogin);
         btnLogin = findViewById(R.id.btnLogin);
@@ -46,11 +49,10 @@ public class LoginActivity extends AppCompatActivity {
         tvGoToRegister = findViewById(R.id.tvGoToRegister);
         mAuth = FirebaseAuth.getInstance();
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestIdToken(getString(R.string.default_web_client_id)) // Pastikan string ini ada di strings.xml
                 .requestEmail()
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
         googleSignInLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -66,14 +68,11 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 });
-
         btnLogin.setOnClickListener(v -> {
             Toast.makeText(LoginActivity.this, "Login Akun Biasa", Toast.LENGTH_SHORT).show();
             goToMainActivity();
         });
-
         btnGoogleLogin.setOnClickListener(v -> signInWithGoogle());
-
         tvGoToRegister.setOnClickListener(v -> {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
@@ -91,7 +90,13 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        String nama = (user != null) ? user.getDisplayName() : "User";
+                        String nama = (user != null) ? user.getDisplayName() : "";
+                        String email = (user != null) ? user.getEmail() : "";
+                        getSharedPreferences("USER_PREF", MODE_PRIVATE)
+                                .edit()
+                                .putString("name", nama)
+                                .putString("email", email)
+                                .apply();
                         Toast.makeText(LoginActivity.this, "Selamat Datang, " + nama + "!", Toast.LENGTH_LONG).show();
                         goToMainActivity();
                     } else {
@@ -105,6 +110,7 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
     @Override
     public void onStart() {
         super.onStart();
@@ -113,4 +119,4 @@ public class LoginActivity extends AppCompatActivity {
             goToMainActivity();
         }
     }
-} 
+}

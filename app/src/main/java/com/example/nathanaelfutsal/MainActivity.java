@@ -1,102 +1,109 @@
 package com.example.nathanaelfutsal;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.firebase.auth.FirebaseAuth;
-
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     LapanganAdapter adapter;
     ArrayList<LapanganModel> listLapangan;
-    private FirebaseAuth mAuth;
-    private GoogleSignInClient mGoogleSignInClient;
+
+    ImageView btnProfile;
+    TextView tvGreetingName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mAuth = FirebaseAuth.getInstance();
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-
-
+        btnProfile = findViewById(R.id.btnProfile);
+        tvGreetingName = findViewById(R.id.tvGreetingName);
+        recyclerView = findViewById(R.id.recyclerViewLapang);
+        btnProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                startActivity(intent);
+            }
+        });
+        setupGreeting();
         listLapangan = new ArrayList<>();
         isiDataDummy();
 
-        recyclerView = findViewById(R.id.recyclerViewLapang);
         adapter = new LapanganAdapter(this, listLapangan);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_logout) {
-            prosesLogout();
-            return true;
+    private void setupGreeting() {
+        SharedPreferences pref = getSharedPreferences("USER_PREF", MODE_PRIVATE);
+        String nama = pref.getString("name", "Player"); // Default "Player" jika kosong
+        Calendar c = Calendar.getInstance();
+        int jam = c.get(Calendar.HOUR_OF_DAY);
+        String sapaanWaktu;
+
+        if (jam >= 4 && jam < 11) {
+            sapaanWaktu = "Selamat Pagi";
+        } else if (jam >= 11 && jam < 15) {
+            sapaanWaktu = "Selamat Siang";
+        } else if (jam >= 15 && jam < 18) {
+            sapaanWaktu = "Selamat Sore";
+        } else {
+            sapaanWaktu = "Selamat Malam";
         }
-        return super.onOptionsItemSelected(item);
+        tvGreetingName.setText(sapaanWaktu + ",\n" + nama);
     }
-
-    private void prosesLogout() {
-        mAuth.signOut();
-
-        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
-
-            Toast.makeText(MainActivity.this, "Berhasil Log Out", Toast.LENGTH_SHORT).show();
-
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        });
-    }
-
     private void isiDataDummy() {
-        listLapangan.add(new LapanganModel(
-                "Lapangan A (Sintetis)",
-                "Rp 150.000 / jam",
-                "Tersedia",
-                R.color.purple_200
-        ));
+        listLapangan.clear();
 
-        listLapangan.add(new LapanganModel(
-                "Lapangan B (Semen)",
-                "Rp 120.000 / jam",
-                "Tersedia",
-                R.color.purple_500
-        ));
+        for (int i = 1; i <= 20; i++) {
 
-        listLapangan.add(new LapanganModel(
-                "Lapangan C (VIP)",
-                "Rp 200.000 / jam",
-                "Tersedia",
-                R.color.purple_700
-        ));
+            String namaLapangan;
+            String harga;
+            String status;
+            int gambarLapangan;
+
+            if (i % 3 == 1) {
+                namaLapangan = "Lapangan " + i + " (Sintetis)";
+                harga = "Rp 150.000 / jam";
+                status = "Tersedia";
+                gambarLapangan = R.drawable.img_sintetis;
+
+            } else if (i % 3 == 2) {
+                namaLapangan = "Lapangan " + i + " (Vinyl Pro)";
+                harga = "Rp 180.000 / jam";
+                status = "Tersedia";
+                gambarLapangan = R.drawable.img_vinyl;
+
+            } else {
+                namaLapangan = "Lapangan " + i + " (Outdoor)";
+                harga = "Rp 100.000 / jam";
+                status = (i % 2 == 0) ? "Penuh" : "Tersedia";
+                gambarLapangan = R.drawable.img_semen;
+            }
+
+            listLapangan.add(new LapanganModel(
+                    namaLapangan,
+                    harga,
+                    status,
+                    gambarLapangan
+            ));
+        }
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupGreeting();
     }
 }

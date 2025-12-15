@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".FormActivity">
+    android:background="#F8F8F8">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,103 +14,104 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Formulir Pemesanan"
-            android:textSize="24sp"
+            android:text="Form Pembayaran"
+            android:textSize="26sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="8dp"/>
+            android:textColor="@color/black"
+            android:layout_marginBottom="16dp"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="24dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+                <TextView
+                    android:id="@+id/tvJamTerpilihForm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Waktu Booking: 08:00 - 11:00"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="8dp"/>
+                <TextView
+                    android:id="@+id/tvTotalHargaForm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Harga: Rp 450.000"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/purple_500"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <TextView
-            android:id="@+id/tvDetailBooking"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="Booking Lapangan A jam 09:00 - 10:00"
+            android:text="Data Penyewa"
             android:textSize="16sp"
-            android:layout_marginBottom="24dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nama Lengkap"
-            android:textStyle="bold"/>
-        <EditText
-            android:id="@+id/etNamaForm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Masukkan nama Anda"
-            android:inputType="textPersonName"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nomor WhatsApp (WA)"
-            android:textStyle="bold"/>
-        <EditText
-            android:id="@+id/etWaForm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Contoh: 08123456789"
-            android:inputType="phone"
-            android:layout_marginBottom="16dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Alamat"
-            android:textStyle="bold"/>
-        <EditText
-            android:id="@+id/etAlamatForm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Masukkan alamat singkat"
-            android:inputType="textPostalAddress"
-            android:layout_marginBottom="24dp"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#DADADA"
-            android:layout_marginBottom="24dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Upload Bukti Pembayaran"
-            android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black"/>
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/black"/>
+
+        <EditText
+            android:id="@+id/etNamaPenyewa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nama Lengkap"
+            android:inputType="textPersonName"
+            android:background="@drawable/edit_text_rounded"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etNomorTelepon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nomor Telepon"
+            android:inputType="phone"
+            android:background="@drawable/edit_text_rounded"
+            android:padding="12dp"
+            android:layout_marginBottom="24dp"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Silakan transfer ke No. Rekening:\nBCA 123456789 a.n Nathanael Futsal"
-            android:textSize="14sp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"/>
-
-        <Button
-            android:id="@+id/btnPilihGambar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pilih File (JPG/PNG)"
-            style="?attr/materialButtonOutlinedStyle" />
+            android:text="Unggah Bukti Transfer (Wajib)"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:textColor="@color/black"/>
 
         <ImageView
-            android:id="@+id/imgPreview"
+            android:id="@+id/ivBuktiTransfer"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:scaleType="centerInside"
-            android:background="#F0F0F0"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" /> <Button
-        android:id="@+id/btnSimpan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Simpan dan Selesaikan Booking"
-        android:layout_marginTop="32dp"
-        android:padding="14dp"/>
+            android:scaleType="centerCrop"
+            android:background="#DDDDDD"
+            android:layout_marginBottom="12dp"
+            android:src="@drawable/ic_image_placeholder" />
+
+        <Button
+            android:id="@+id/btnUploadBukti"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PILIH FOTO DARI GALERI"
+            android:backgroundTint="@color/purple_500"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnSelesaikanPemesanan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="SELESAIKAN PEMESANAN"
+            android:backgroundTint="#4CAF50"/>
 
     </LinearLayout>
 </ScrollView>
